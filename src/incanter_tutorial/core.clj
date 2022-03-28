@@ -118,3 +118,52 @@
 ;4,5,6
 ;7,8,9
 
+;; column selection
+;incanter.core/$  
+;[cols]
+;[arg1 arg2]
+;[rows cols data]
+;(sel (second args) :cols (first args)) のエイリアス
+(incanter/$   :speed (datasets/get-dataset :cars))
+;; => (4.0 4.0 7.0 7.0 8.0 9.0 10.0 10.0 10.0 11.0 11.0 12.0 12.0 12.0 12.0 13.0 13.0 13.0 13.0 14.0 14.0 14.0 14.0 15.0 15.0 15.0 16.0 16.0 17.0 17.0 17.0 18.0 18.0 18.0 18.0 19.0 19.0 19.0 20.0 20.0 20.0 20.0 20.0 22.0 23.0 24.0 24.0 24.0 24.0 25.0)
+
+(incanter/$ (range 1 4) [:speed :dist] (datasets/get-dataset :cars))
+;| :speed | :dist |
+;|--------+-------|
+;|    4.0 |  10.0 |
+;|    7.0 |   4.0 |
+;|    7.0 |  22.0 |
+
+; with-data 与えられたデータを$dataにバインドし、bodyを実行します。
+;           通常、$および$where関数と一緒に使用します。
+; mean データの平均値を返します。
+; sd データの標本標準偏差を返します。
+(incanter/with-data (datasets/get-dataset :cars)
+  [(incanter.stats/mean (incanter/$ :speed))
+   (incanter.stats/sd (incanter/$ :speed))])
+
+
+(incanter/with-data (datasets/get-dataset :iris)
+  (incanter/view incanter/$data)
+  (incanter/view (incanter/$ [:Sepal.Length :Sepal.Width :Species])))
+
+;;row selection
+(incanter/$where {"Species" "setosa"}
+                 (datasets/get-dataset :iris)) ;何も返って来ない。要調査
+
+(incanter/$where {"Petal.Width" {:lt 1.5}}
+                 (datasets/get-dataset :iris))
+
+(incanter/$where {"Petal.Width" {:gt 1.0, :lt 1.5}}
+                 (datasets/get-dataset :iris)) ;何も返って来ない。要調査
+ 
+(incanter/$where {"Petal.Width" {:gt 1.0, :lt 1.5}
+                  "Species" {:in #{"virginica" "setosa"}}}                 
+                 (datasets/get-dataset :iris)) ;何も返って来ない。要調査
+
+(incanter/$where (fn [row]
+                   (or (< (row "Petal.Width") 1.0)
+                       (> (row "Petal.Length") 5.0)))
+                 (datasets/get-dataset :iris)) ;nullpo error
+
+
